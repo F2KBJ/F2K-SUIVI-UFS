@@ -24,12 +24,13 @@ ul{list-style:none;margin:10px 0 0;padding:0}li{display:flex;justify-content:spa
 <div class="c"><h2>Ventes du jour</h2>
 <div class="r"><div><label for="vp">Plateaux</label><input id="vp" type="number" inputmode="numeric" min="0" oninput="render()"></div><div><label for="vu">Unités</label><input id="vu" type="number" inputmode="numeric" min="0" oninput="render()"></div></div>
 <div class="r"><div><label for="vk">Client (seulement pour une vente à crédit)</label><input id="vk" type="text" placeholder="Nom du client"></div></div><p class="p" id="pv"></p><button class="b" onclick="addV()">Ajouter cette vente</button><ul id="vl"></ul></div>
-<div class="c"><h2>Œufs cassés ou perdus</h2><div class="r"><div><label for="cp">Plateaux</label><input id="cp" type="number" inputmode="numeric" min="0"></div><div><label for="cu">Unités</label><input id="cu" type="number" inputmode="numeric" min="0"></div></div><div class="r"><div><label for="cm">Motif (facultatif)</label><input id="cm" type="text" placeholder="Cassés, fêlés, volés..."></div></div><button class="b s" onclick="addC()">Ajouter</button><ul id="cl"></ul></div><div class="c"><h2>Dépenses du jour</h2><div class="r"><div><label for="xm">Montant (F)</label><input id="xm" type="number" inputmode="numeric" min="0"></div><div><label for="xt">Type</label><select id="xt"><option value="pdg">Dépôt au PDG</option><option value="autre">Autre dépense</option></select></div></div><div class="r"><div><label for="xn">Détail (obligatoire pour une autre dépense)</label><input id="xn" type="text" placeholder="Provende, transport, salaire..."></div></div><button class="b s" onclick="addX()">Ajouter la dépense</button><ul id="xl"></ul></div><div id="warn"></div><div class="c"><h2>Point du jour</h2><div class="g" id="res"></div></div>
+<div class="c"><h2>Œufs cassés ou perdus</h2><div class="r"><div><label for="cp">Plateaux</label><input id="cp" type="number" inputmode="numeric" min="0"></div><div><label for="cu">Unités</label><input id="cu" type="number" inputmode="numeric" min="0"></div></div><div class="r"><div><label for="cm">Motif (facultatif)</label><input id="cm" type="text" placeholder="Cassés, fêlés, volés..."></div></div><button class="b s" onclick="addC()">Ajouter</button><ul id="cl"></ul></div><div class="c"><h2>Dépenses</h2><div class="r"><div><label for="xd">Date de la dépense</label><input type="date" id="xd"></div></div><div class="r"><button class="b s" onclick="xday(-1)">Hier</button><button class="b s" onclick="xday(0)">Aujourd'hui</button></div><div class="r"><div><label for="xm">Montant (F)</label><input id="xm" type="number" inputmode="numeric" min="0"></div><div><label for="xt">Type</label><select id="xt"><option value="pdg">Dépôt au PDG</option><option value="autre">Autre dépense</option></select></div></div><div class="r"><div><label for="xn">Détail (obligatoire pour une autre dépense)</label><input id="xn" type="text" placeholder="Provende, transport, salaire..."></div></div><button class="b s" onclick="addX()">Ajouter la dépense</button><ul id="xl"></ul></div><div id="warn"></div><div class="c"><h2>Point du jour</h2><div class="g" id="res"></div></div>
+<div class="c"><h2>Total des dépenses</h2><div class="g" id="dx"></div></div>
 <div class="c"><h2>Semaine et mois</h2><div class="g" id="per"></div></div>
 </section>
-<section id="s-stats"><div id="st"></div></section>
+<section id="s-stats"><div class="c"><h2>Dépenses sur une période</h2><div class="r"><button class="b s" onclick="ep('Jour')">Jour</button><button class="b s" onclick="ep('Semaine')">Semaine</button><button class="b s" onclick="ep('Mois')">Mois</button></div><div class="r"><div><label for="ef">Du</label><input type="date" id="ef" onchange="renderE()"></div><div><label for="et">Au</label><input type="date" id="et" onchange="renderE()"></div></div><div class="g" id="ex"></div><ul id="el"></ul></div><div id="st"></div></section>
 <section id="s-cred"><div class="c"><h2>Ventes à crédit</h2><p class="p" id="ct"></p><ul id="cr"></ul><p class="m">Pour noter une vente à crédit, écrivez le nom du client dans l'onglet Saisie au moment de la vente.</p></div></section>
-<section id="s-pdf"><div class="c"><h2>Télécharger un PDF</h2>
+<section id="s-pdf"><div class="c"><h2>Télécharger ou partager un PDF</h2><div style="margin-bottom:12px"><label for="rt">Type de PDF</label><select id="rt"><option value="global">Global (tout regroupé)</option><option value="ramasses">Œufs ramassés seulement</option><option value="ventes">Ventes seulement</option><option value="depenses">Dépenses seulement</option></select></div>
 <div class="r"><button class="b s" onclick="preset('Jour')">Jour</button><button class="b s" onclick="preset('Semaine')">Semaine</button><button class="b s" onclick="preset('Mois')">Mois</button></div>
 <p class="m" style="margin:0 0 10px">Les boutons utilisent la date choisie dans l'onglet Saisie.</p>
 <div class="r"><div><label for="from">Du</label><input type="date" id="from" onchange="kind='Période'"></div><div><label for="to">Au</label><input type="date" id="to" onchange="kind='Période'"></div></div>
@@ -465,14 +466,15 @@ function calc(to){const o=[];let s=D.ini.eggs;for(let d=D.ini.date;d<=to&&o.leng
 let cur=iso(new Date()),kind='Période';
 const num=i=>Math.max(0,parseInt($(i).value)||0);
 function tab(n){['saisie','stats','cred','pdf','data'].forEach(k=>{$('s-'+k).classList.toggle('on',k==n);$('n-'+k).classList.toggle('on',k==n)})}
-function onDate(){cur=$('date').value||cur;const x=D.days[cur];$('rp').value=x?Math.floor(x.r/30):'';$('ru').value=x?x.r%30:'';$('pn').value=pl(cur)||'';render()}
+function onDate(){cur=$('date').value||cur;const x=D.days[cur];$('rp').value=x?Math.floor(x.r/30):'';$('ru').value=x?x.r%30:'';$('pn').value=pl(cur)||'';$('xd').value=cur;render()}
 function okDate(){if(cur<D.ini.date){alert("Le suivi commence le "+fd(D.ini.date)+". Choisissez une date à partir de ce jour.");return false}return true}
 function day(){return D.days[cur]||(D.days[cur]={r:0,v:[],c:[]})}
 function saveR(){if(!okDate())return;const p=parseInt($('pn').value);day().r=num('rp')*30+num('ru');if(p>0)D.pl[cur]=p;save();render()}
 function addV(){if(!okDate())return;const e=num('vp')*30+num('vu');if(!e)return;const k=$('vk').value.trim();day().v.push(k?{e,k}:e);$('vp').value=$('vu').value=$('vk').value='';save();render()}
 function addC(){if(!okDate())return;const e=num('cp')*30+num('cu');if(!e)return;const d=day();(d.c=d.c||[]).push({n:e,m:$('cm').value.trim()});$('cp').value=$('cu').value=$('cm').value='';save();render()}
 function delC(i){D.days[cur].c.splice(i,1);save();render()}
-function addX(){if(!okDate())return;const m=num('xm'),t=$('xt').value,n=$('xn').value.trim();if(!m)return;if(t=='autre'&&!n){alert("Écrivez à quoi sert cette dépense.");return}const d=day();(d.x=d.x||[]).push({m,t,n});$('xm').value=$('xn').value='';save();render()}
+function xday(n){$('xd').value=add(iso(new Date()),n)}
+function addX(){const dd=$('xd').value||cur;if(dd<D.ini.date){alert("Le suivi commence le "+fd(D.ini.date)+". Choisissez une date à partir de ce jour.");return}const m=num('xm'),t=$('xt').value,n=$('xn').value.trim();if(!m)return;if(t=='autre'&&!n){alert("Écrivez à quoi sert cette dépense.");return}const d=D.days[dd]||(D.days[dd]={r:0,v:[],c:[]});(d.x=d.x||[]).push({m,t,n});$('xm').value=$('xn').value='';save();if(dd!=cur){cur=dd;$('date').value=dd;onDate()}else render()}
 function delX(i){D.days[cur].x.splice(i,1);save();render()}
 function del(i){D.days[cur].v.splice(i,1);save();render()}
 const tile=(l,v,s,c)=>'<div class="t '+(c||'')+'"><span>'+l+'</span><b>'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>';
@@ -481,6 +483,46 @@ function stats(rows){const r=rows.slice(-14),L=r.map(a=>a.d.slice(8)),c=(h,a,col
  $('st').innerHTML=c('Œufs ramassés par jour (en plateaux)',r.map(a=>a.r/30),'#1F6B34',v=>v?+v.toFixed(1):'')+c('Taux de ponte (%)',r.map(a=>a.p&&a.r?a.r/a.p*100:0),'#F2B705',v=>v?Math.round(v):'')+c('Recette par jour (milliers de F)',r.map(a=>a.rec),'#2f7fb8',v=>v?Math.round(v/100)/10:'')+'<p class="m">Les 14 derniers jours, jusqu\'à la date choisie. Le taux de ponte demande le nombre de poules.</p>'}
 function debts(){const m={},g=(n,o,p)=>{const k=n.toLowerCase();m[k]=m[k]||{n,o:0,p:0};m[k].o+=o;m[k].p+=p};Object.keys(D.days).forEach(d=>(D.days[d].v||[]).forEach(e=>{if(e.k)g(e.k,prix(e.e),0)}));D.pay.forEach(z=>g(z.n,0,z.m));return Object.values(m)}
 function credits(){window.DB=debts();$('ct').textContent='Reste à recevoir : '+fr(sum(DB.map(z=>z.o-z.p)));$('cr').innerHTML=DB.map((z,i)=>'<li><span><b>'+esc(z.n)+'</b><br><small>Dû '+fr(z.o)+' - payé '+fr(z.p)+'</small></span><span style="text-align:right"><b style="color:'+(z.o>z.p?'#b3261e':'#1F6B34')+'">'+fr(z.o-z.p)+'</b><br><button class="pay" onclick="pay('+i+')">Encaisser</button></span></li>').join('')}
+function ep(k){let a=cur,b=cur;if(k=='Semaine'){a=mon(cur);b=add(a,6)}if(k=='Mois'){a=cur.slice(0,7)+'-01';b=iso(new Date(+cur.slice(0,4),+cur.slice(5,7),0))}$('ef').value=a;$('et').value=b;renderE()}
+function renderE(){const a=$('ef').value,b=$('et').value;if(!a||!b||a>b){$('ex').innerHTML='';$('el').innerHTML='';return}const L=[];Object.keys(D.days).sort().forEach(d=>{if(d>=a&&d<=b)(D.days[d].x||[]).forEach(z=>L.push({d:d,m:z.m,t:z.t,n:z.n}))});const T=sum(L.map(z=>z.m)),P=sum(L.filter(z=>z.t=='pdg').map(z=>z.m));$('ex').innerHTML=tile('Total des dépenses',fr(T),L.length+' dépense(s)','y')+tile('Dépôts au PDG',fr(P))+tile('Autres dépenses',fr(T-P));$('el').innerHTML=L.map(z=>'<li><span>'+fd(z.d)+' - '+(z.t=='pdg'?'Dépôt au PDG':esc(z.n))+(z.t=='pdg'&&z.n?' <small>'+esc(z.n)+'</small>':'')+'</span><b>'+fr(z.m)+'</b></li>').join('')}
+function lab(from,to){return kind=='Jour'?'Journée du '+fd(from):kind=='Mois'?'Mois de '+MS[+from.slice(5,7)-1]+' '+from.slice(0,4):(kind=='Semaine'?'Semaine':'Période')+' du '+fd(from)+' au '+fd(to)}
+function fin(doc,nm,share){if(share){const f=new File([doc.output('blob')],nm,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'LA JUSTICE DE DIEU'}).catch(()=>{});else alert("Le partage n'est pas disponible sur cet appareil. Téléchargez le PDF, puis envoyez-le par WhatsApp.")}else doc.save(nm)}
+function annexes(doc,from,to,wv,wx){let y=0,first=1;const V=[],X=[];
+ Object.keys(D.days).sort().forEach(d=>{if(d<from||d>to)return;const x=D.days[d];(x.v||[]).forEach(e=>V.push([fd(d),lib(ve(e)),e.k?'Crédit : '+e.k:'Comptant',prix(ve(e))]));(x.x||[]).forEach(z=>X.push([fd(d),z.t=='pdg'?'Dépôt au PDG':'Autre dépense',z.n||'',z.m]))});
+ const one=(t,head,R)=>{if(!R.length)return;if(first){doc.addPage();y=16;first=0}else{y=doc.lastAutoTable.finalY+10;if(y>250){doc.addPage();y=16}}
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(0);doc.text(t,10,y);
+  const body=R.map(r=>r.slice(0,3).concat(fr(r[3]))).concat([[{content:'TOTAL',colSpan:3},fr(sum(R.map(r=>r[3])))]]);
+  doc.autoTable({startY:y+3,margin:{left:10,right:10},head:[head],body,styles:{fontSize:8,cellPadding:1.2,lineColor:[150,150,150],lineWidth:.2},headStyles:{fillColor:[31,107,52],textColor:255},columnStyles:{3:{halign:'right'}},
+   didParseCell:h=>{if(h.section=='body'&&h.row.index==R.length){h.cell.styles.fillColor=[165,214,167];h.cell.styles.fontStyle='bold'}}})};
+ if(wv)one('DÉTAIL DES VENTES',['Date','Vente','Paiement','Montant'],V);if(wx)one('DÉTAIL DES DÉPENSES',['Date','Type','Détail','Montant'],X)}
+function rap(ty,share){
+ const from=$('from').value,to=$('to').value;if(!from||!to||from>to){alert("Choisissez une période valide.");return}
+ if(to<D.ini.date){alert("Aucune donnée avant le "+fd(D.ini.date));return}
+ const rows=calc(to).filter(a=>a.d>=from),G={};rows.forEach(a=>{(G[mon(a.d)]=G[mon(a.d)]||[]).push(a)});
+ const dep=ty=='depenses',fq=dep?fr:eg,q=a=>ty=='ramasses'?a.r:ty=='ventes'?a.v:a.dep;
+ const H={ramasses:['Date','Ramassés (jour)','Total semaine','Total période','Poules','Taux de ponte'],ventes:['Date','Vendus (jour)','Total semaine','Total période','Recette du jour','Recette période'],depenses:['Date','Dépenses (jour)','Total semaine','Total période','Dépôt au PDG','Autres dépenses']}[ty];
+ const multi=Object.keys(G).length>1,body=[],st=[];let cp=0,mp=0,n=0;
+ for(const k in G){const g=G[k];let cs=0,sm=0,sp=0;n++;
+  g.forEach(a=>{cs+=q(a);cp+=q(a);sm+=a.rec;mp+=a.rec;sp+=a.pdg;const h=[JR[dt(a.d).getDay()].slice(0,3)+' '+fd(a.d).slice(0,6)+fd(a.d).slice(8)];
+   const ex=ty=='ramasses'?[a.p||'',a.p&&a.r?(a.r/a.p*100).toFixed(1)+' %':'']:ty=='ventes'?[fr(a.rec),fr(mp)]:[fr(a.pdg),fr(a.dep-a.pdg)];
+   body.push(a.has?h.concat([fq(q(a)),fq(cs),fq(cp)],ex):h.concat(['','','','','']));st.push('')});
+  if(multi){const ex=ty=='ramasses'?['','']:ty=='ventes'?[fr(sm),fr(mp)]:[fr(sp),fr(cs-sp)];body.push(['SEM. '+n+' ('+g[0].d.slice(8)+'-'+g[g.length-1].d.slice(8)+')',fq(cs),'',fq(cp)].concat(ex));st.push('w')}}
+ const Tq=sum(rows.map(q)),Tm=sum(rows.map(a=>a.rec)),Tp=sum(rows.map(a=>a.pdg));let cr=0;
+ Object.keys(D.days).forEach(d=>{if(d>=from&&d<=to)(D.days[d].v||[]).forEach(e=>{if(e.k)cr+=prix(e.e)})});
+ body.push(['TOTAL '+kind.toUpperCase(),fq(Tq),'',fq(cp)].concat(ty=='ramasses'?['','']:ty=='ventes'?[fr(Tm),fr(Tm)]:[fr(Tp),fr(Tq-Tp)]));st.push('t');
+ const sm1=ty=='ramasses'?'Total ramassé : '+eg(Tq)+' ('+Tq+' œufs)':ty=='ventes'?'Total vendu : '+eg(Tq)+' ('+Tq+' œufs)   |   Recette : '+fr(Tm)+'   |   dont à crédit : '+fr(cr):'Total des dépenses : '+fr(Tq)+'   |   Dépôts au PDG : '+fr(Tp)+'   |   Autres dépenses : '+fr(Tq-Tp);
+ const{jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'}),TT={ramasses:'FICHE DES ŒUFS RAMASSÉS',ventes:'FICHE DES VENTES',depenses:'FICHE DES DÉPENSES'}[ty];
+ doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(31,107,52);doc.text('LA JUSTICE DE DIEU',105,16,{align:'center'});
+ doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(60);doc.text("Élevage de poules pondeuses - Vente d'œufs frais",105,22,{align:'center'});
+ doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(0);doc.text(TT+' - '+lab(from,to).toUpperCase(),105,30,{align:'center'});
+ doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(sm1,105,36,{align:'center'});
+ doc.autoTable({startY:41,margin:{left:10,right:10},head:[H],body,styles:{fontSize:8,halign:'center',cellPadding:1.2,lineColor:[150,150,150],lineWidth:.2},headStyles:{fillColor:[31,107,52],textColor:255},
+  didParseCell:h=>{if(h.section=='body'){const t=st[h.row.index];if(t=='w'){h.cell.styles.fillColor=[165,214,167];h.cell.styles.fontStyle='bold'}if(t=='t'){h.cell.styles.fillColor=[31,107,52];h.cell.styles.textColor=255;h.cell.styles.fontStyle='bold'}}}});
+ let y=doc.lastAutoTable.finalY+12;if(y>262){doc.addPage();y=20}
+ doc.setTextColor(0);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
+ doc.text('Signature : ______________________________',10,y+20);doc.text('Date : ____ / ____ / ________',125,y+20);
+ annexes(doc,from,to,ty=='ventes',dep);
+ fin(doc,{ramasses:'oeufs-ramasses_',ventes:'ventes_',depenses:'depenses_'}[ty]+from+'_'+to+'.pdf',share)}
 function pay(i){const z=DB[i],m=parseInt(prompt('Montant payé par '+z.n+' (en F) :'));if(m>0){D.pay.push({d:iso(new Date()),n:z.n,m});save();render()}}
 const PK='jdd_pin',gp=()=>{try{return localStorage.getItem(PK)}catch(e){return null}};
 function lock(){$('lk').style.display=gp()?'flex':'none'}
@@ -490,7 +532,7 @@ function rmPin(){localStorage.removeItem(PK);alert('Code retiré.')}
 function render(){
  const rows=calc(cur),t=rows[rows.length-1]||{open:0,r:0,v:0,c:0,close:0,rec:0,p:0},x=D.days[cur]||{r:0,v:[],c:[]};
  const wk=rows.filter(a=>a.d>=mon(cur)),mo=rows.filter(a=>a.d.slice(0,7)==cur.slice(0,7));
- const tot=a=>({r:sum(a.map(z=>z.r)),v:sum(a.map(z=>z.v)),c:sum(a.map(z=>z.rec)),d:sum(a.map(z=>z.dep))}),W=tot(wk),M=tot(mo),pv=num('vp')*30+num('vu');
+ const tot=a=>({r:sum(a.map(z=>z.r)),v:sum(a.map(z=>z.v)),c:sum(a.map(z=>z.rec)),d:sum(a.map(z=>z.dep)),p:sum(a.map(z=>z.pdg))}),W=tot(wk),M=tot(mo),pv=num('vp')*30+num('vu');
  const cr=sum((x.v||[]).filter(e=>e.k).map(e=>prix(e.e))),tx=t.p&&t.r?(t.r/t.p*100).toFixed(1)+' %':'-';
  $('rec').textContent=x.r?eg(x.r)+' ('+x.r+' œufs)':'Pas encore enregistré';
  $('pv').textContent=pv?lib(pv)+' = '+fr(prix(pv)):'';
@@ -498,11 +540,13 @@ function render(){
  $('cl').innerHTML=(x.c||[]).map((z,i)=>'<li><span>'+lib(z.n)+(z.m?' <small>'+esc(z.m)+'</small>':'')+'</span><button aria-label="Supprimer" onclick="delC('+i+')">✕</button></li>').join('');
  $('xl').innerHTML=(x.x||[]).map((z,i)=>'<li><span>'+(z.t=='pdg'?'Dépôt au PDG':esc(z.n||'Autre dépense'))+' <b>'+fr(z.m)+'</b>'+(z.t=='pdg'&&z.n?'<br><small>'+esc(z.n)+'</small>':'')+'</span><button aria-label="Supprimer" onclick="delX('+i+')">✕</button></li>').join('');
  $('warn').innerHTML=t.close<0?'<div class="w">Le stock est négatif : vérifiez les œufs ramassés, vendus et cassés.</div>':'';
- $('res').innerHTML=tile('Chiffre d\'affaires du jour',fr(t.rec),cr?'dont à crédit : '+fr(cr):'','y')+tile('Dépenses',fr(t.dep),t.pdg?'dont dépôt au PDG : '+fr(t.pdg):'')+tile('Solde du jour',fr(t.rec-t.dep),'recette - dépenses')+tile('Stock veille',eg(t.open))+tile('Stock fin',eg(t.close),t.close+' œufs')+tile('Ramassés',eg(t.r),t.r+' œufs')+tile('Vendus',eg(t.v),t.v+' œufs')+tile('Cassés ou perdus',eg(t.c))+tile('Taux de ponte',tx,t.p?t.p+' poules':'Indiquez le nombre de poules');
- $('per').innerHTML=tile('Ramassés cette semaine',eg(W.r),W.r+' œufs')+tile('Ramassés ce mois',eg(M.r),M.r+' œufs')+tile('Vendus semaine / mois',eg(W.v),'mois : '+eg(M.v))+tile('Recette sem. / mois',fr(W.c),'mois : '+fr(M.c))+tile('Dépenses sem. / mois',fr(W.d),'mois : '+fr(M.d))+tile('Solde sem. / mois',fr(W.c-W.d),'mois : '+fr(M.c-M.d));
- stats(rows);credits()}
+ $('res').innerHTML=tile('Chiffre d\'affaires du jour',fr(t.rec),cr?'dont à crédit : '+fr(cr):'','y')+tile('Solde du jour',fr(t.rec-t.dep),'recette - dépenses')+tile('Stock veille',eg(t.open))+tile('Stock fin',eg(t.close),t.close+' œufs')+tile('Ramassés',eg(t.r),t.r+' œufs')+tile('Vendus',eg(t.v),t.v+' œufs')+tile('Cassés ou perdus',eg(t.c))+tile('Taux de ponte',tx,t.p?t.p+' poules':'Indiquez le nombre de poules');
+ $('per').innerHTML=tile('Ramassés cette semaine',eg(W.r),W.r+' œufs')+tile('Ramassés ce mois',eg(M.r),M.r+' œufs')+tile('Vendus semaine / mois',eg(W.v),'mois : '+eg(M.v))+tile('Recette sem. / mois',fr(W.c),'mois : '+fr(M.c))+tile('Solde sem. / mois',fr(W.c-W.d),'mois : '+fr(M.c-M.d));
+ const sx=(d,p)=>'PDG : '+fr(p)+' - autres : '+fr(d-p);
+ $('dx').innerHTML=tile('Dépenses du '+fd(cur).slice(0,5),fr(t.dep),sx(t.dep,t.pdg))+tile('Dépenses de la semaine',fr(W.d),sx(W.d,W.p))+tile('Dépenses du mois',fr(M.d),sx(M.d,M.p),'y');
+ stats(rows);credits();renderE()}
 function preset(k){kind=k;const y=+cur.slice(0,4),m=+cur.slice(5,7);let a=cur,b=cur;if(k=='Semaine'){a=mon(cur);b=add(a,6)}if(k=='Mois'){a=cur.slice(0,7)+'-01';b=iso(new Date(y,m,0))}$('from').value=a;$('to').value=b}
-function pdf(share){
+function pdf(share){const RT=$('rt').value;if(RT!='global')return rap(RT,share);
  const from=$('from').value,to=$('to').value;if(!from||!to||from>to){alert("Choisissez une période valide.");return}
  if(to<D.ini.date){alert("Aucune donnée avant le "+fd(D.ini.date));return}
  const rows=calc(to).filter(a=>a.d>=from),G={};rows.forEach(a=>{(G[mon(a.d)]=G[mon(a.d)]||[]).push(a)});
@@ -519,7 +563,7 @@ function pdf(share){
  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(0);doc.text('FICHE DE SUIVI DES ŒUFS - '+label.toUpperCase(),105,30,{align:'center'});
  doc.setFont('helvetica','normal');doc.setFontSize(9);
  doc.text('Ramassés : '+eg(T.r)+' ('+T.r+' œufs)   |   Vendus : '+eg(T.v)+'   |   Cassés : '+eg(T.l)+'   |   Stock fin : '+eg(last.close),105,36,{align:'center'});
- doc.text('Recette : '+fr(T.c)+'   |   Dépenses : '+fr(T.d)+' (dont dépôt au PDG : '+fr(T.p)+')   |   Solde : '+fr(T.c-T.d),105,41,{align:'center'});
+ doc.text('Recette : '+fr(T.c)+'   |   Dépenses : '+fr(T.d)+' (PDG : '+fr(T.p)+' ; autres : '+fr(T.d-T.p)+')   |   Solde : '+fr(T.c-T.d),105,41,{align:'center'});
  doc.autoTable({startY:46,margin:{left:10,right:10},head:[['Date','Stock veille','Ramassés (jour)','Cumul sem.','Cumul '+(kind=='Mois'?'mois':'période'),'Vendus','Cassés','Stock fin','Recette','Dépenses','Solde']],body,
   columnStyles:{0:{cellWidth:21},1:{cellWidth:17},2:{cellWidth:17},3:{cellWidth:17},4:{cellWidth:17},5:{cellWidth:17},6:{cellWidth:11},7:{cellWidth:17},8:{cellWidth:16},9:{cellWidth:15},10:{cellWidth:16}},styles:{fontSize:6.5,halign:'center',cellPadding:1,lineColor:[150,150,150],lineWidth:.2},headStyles:{fillColor:[31,107,52],textColor:255},
   didParseCell:h=>{if(h.section=='body'){const t=ty[h.row.index];if(t=='w'){h.cell.styles.fillColor=[165,214,167];h.cell.styles.fontStyle='bold'}if(t=='t'){h.cell.styles.fillColor=[31,107,52];h.cell.styles.textColor=255;h.cell.styles.fontStyle='bold'}}}});
@@ -528,8 +572,8 @@ function pdf(share){
  y+=14;if(y>262){doc.addPage();y=20}
  doc.setTextColor(0);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
  doc.text('Signature : ______________________________',10,y+20);doc.text('Date : ____ / ____ / ________',125,y+20);
- const nm='suivi-oeufs_'+from+'_'+to+'.pdf';if(share){const f=new File([doc.output('blob')],nm,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'Suivi des œufs'}).catch(()=>{});else alert("Le partage n'est pas disponible sur cet appareil. Téléchargez le PDF, puis envoyez-le par WhatsApp.")}else doc.save(nm)}
+ annexes(doc,from,to,true,true);const nm='suivi-oeufs_'+from+'_'+to+'.pdf';if(share){const f=new File([doc.output('blob')],nm,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'Suivi des œufs'}).catch(()=>{});else alert("Le partage n'est pas disponible sur cet appareil. Téléchargez le PDF, puis envoyez-le par WhatsApp.")}else doc.save(nm)}
 function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='sauvegarde-oeufs_'+iso(new Date())+'.json';a.click()}
 function restore(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.ini||!j.days)throw 0;if(confirm("Remplacer toutes les données de l'application par cette sauvegarde ?")){D=j;D.pl=D.pl||{};D.pay=D.pay||[];save();onDate()}}catch(e){alert("Ce fichier n'est pas une sauvegarde valide.")}};r.readAsText(f)}
-$('date').value=cur;onDate();preset('Mois');lock();
+$('date').value=cur;onDate();preset('Mois');ep('Mois');lock();
 </script><script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(function(){})}</script></body></html>
