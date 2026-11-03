@@ -4,7 +4,6 @@
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
- "orientation": "portrait",
  "background_color": "#F1F4EE",
  "theme_color": "#1F6B34",
  "lang": "fr",
@@ -27,5 +26,10 @@
    "type": "image/png",
    "purpose": "maskable"
   }
+ ],
+ "id": "./",
+ "display_override": [
+  "standalone",
+  "minimal-ui"
  ]
 }
