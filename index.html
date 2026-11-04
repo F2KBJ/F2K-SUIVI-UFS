@@ -538,7 +538,7 @@ async function rap(ty,share){if(ty=='depot')return recu(share);
   didParseCell:h=>{if(h.section=='body'){const t=st[h.row.index];if(t=='w'){h.cell.styles.fillColor=[165,214,167];h.cell.styles.fontStyle='bold'}if(t=='t'){h.cell.styles.fillColor=[31,107,52];h.cell.styles.textColor=255;h.cell.styles.fontStyle='bold'}}}});
  let y=doc.lastAutoTable.finalY+12;if(y>262){doc.addPage();y=20}
  doc.setTextColor(0);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
- doc.text('Signature : ______________________________',10,y+20);sigImg(doc,y);doc.text('Date : ____ / ____ / ________',125,y+20);
+ doc.text('Signature : ______________________________',10,y+20);sigImg(doc,y);doc.text('Date : '+fd(td()),125,y+20);
  annexes(doc,from,to,ty=='ventes',dep);if(dep)await recusPages(doc,from,to);
  fin(doc,{ramasses:'oeufs-ramasses_',ventes:'ventes_',depenses:'depenses_'}[ty]+from+'_'+to+'.pdf',share)}
 const touch=d=>{if(D.days[d])D.days[d].t=Date.now()};
@@ -627,7 +627,7 @@ function recu(share){const from=$('from').value,to=$('to').value;if(!from||!to||
  doc.autoTable({startY:38,margin:{left:10,right:10},head:[['Date','Détail','Montant']],body:L.map(r=>[r[0],r[1],fr(r[2])]).concat([[{content:'TOTAL',colSpan:2},fr(sum(L.map(r=>r[2])))]]),styles:{fontSize:9,cellPadding:1.5,lineColor:[150,150,150],lineWidth:.2},headStyles:{fillColor:[31,107,52],textColor:255},columnStyles:{2:{halign:'right'}}});
  let y=doc.lastAutoTable.finalY+8;doc.setFontSize(9);doc.text("Cumul des dépôts du mois jusqu'au "+fd(to)+' : '+fr(cum),10,y);y+=14;if(y>240){doc.addPage();y=20}
  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.text('Le PDG',125,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
- doc.text('Signature : ____________________',10,y+20);sigImg(doc,y);doc.text('Signature : ____________________',125,y+20);doc.text('Date : ____ / ____ / ________',10,y+30);doc.text('Date : ____ / ____ / ________',125,y+30);
+ doc.text('Signature : ____________________',10,y+20);sigImg(doc,y);doc.text('Signature : ____________________',125,y+20);doc.text('Date : '+fd(td()),10,y+30);doc.text('Date : '+fd(td()),125,y+30);
  fin(doc,'recu-depot_'+from+'_'+to+'.pdf',share)}
 function sgInit(){const c=$('sg'),x=c.getContext('2d');if(!x)return;let dn=0;x.lineWidth=2.5;x.lineCap='round';const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
  c.addEventListener('pointerdown',e=>{dn=1;const q=p(e);x.beginPath();x.moveTo(q[0],q[1]);c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!dn)return;const q=p(e);x.lineTo(q[0],q[1]);x.stroke()});['pointerup','pointercancel'].forEach(t=>c.addEventListener(t,()=>{dn=0}))}
@@ -687,7 +687,7 @@ async function pdf(share){const RT=$('rt').value;if(RT!='global')return rap(RT,s
  doc.text(doc.splitTextToSize("pl = plateau (30 unités) ; u = unité. Prix : unité 100 F ; 3 unités 250 F ; 1/2 plateau 1 150 F ; plateau 2 300 F. Stock fin = veille + ramassés - vendus - cassés. Solde = recette - dépenses (la recette comprend les ventes à crédit).",190),10,y);
  y+=14;if(y>262){doc.addPage();y=20}
  doc.setTextColor(0);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
- doc.text('Signature : ______________________________',10,y+20);sigImg(doc,y);doc.text('Date : ____ / ____ / ________',125,y+20);
+ doc.text('Signature : ______________________________',10,y+20);sigImg(doc,y);doc.text('Date : '+fd(td()),125,y+20);
  annexes(doc,from,to,true,true);await recusPages(doc,from,to);const nm='suivi-oeufs_'+from+'_'+to+'.pdf';if(share){const f=new File([doc.output('blob')],nm,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'Suivi des œufs'}).catch(()=>{});else alert("Le partage n'est pas disponible sur cet appareil. Téléchargez le PDF, puis envoyez-le par WhatsApp.")}else doc.save(nm)}
 function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='sauvegarde-oeufs_'+iso(new Date())+'.json';a.click()}
 function restore(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.ini||!j.days)throw 0;if(confirm("Remplacer toutes les données de l'application par cette sauvegarde ?")){D=j;fix();save();onDate()}}catch(e){alert("Ce fichier n'est pas une sauvegarde valide.")}};r.readAsText(f)}
