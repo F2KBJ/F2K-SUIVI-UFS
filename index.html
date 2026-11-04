@@ -539,7 +539,7 @@ async function rap(ty,share){if(ty=='depot')return recu(share);
  let y=doc.lastAutoTable.finalY+12;if(y>262){doc.addPage();y=20}
  doc.setTextColor(0);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
  doc.text('Signature : ______________________________',10,y+20);sigImg(doc,y);doc.text('Date : '+fd(td()),125,y+20);
- annexes(doc,from,to,ty=='ventes',dep);if(dep)await recusPages(doc,from,to);
+ annexes(doc,from,to,ty=='ventes',dep);if(dep)await recusPages(doc,from,to);stamp(doc);
  fin(doc,{ramasses:'oeufs-ramasses_',ventes:'ventes_',depenses:'depenses_'}[ty]+from+'_'+to+'.pdf',share)}
 const touch=d=>{if(D.days[d])D.days[d].t=Date.now()};
 const DOC='jdd-5c69b28c66a9f87b3422',CFG={k:'AIzaSyCvnb4ZgcoJtXiJW0ojfSR7ag9KDbOzqA0',p:'recrutement-f2k-multiservice'},cfg=()=>CFG.p?CFG:FB;
@@ -628,7 +628,7 @@ function recu(share){const from=$('from').value,to=$('to').value;if(!from||!to||
  let y=doc.lastAutoTable.finalY+8;doc.setFontSize(9);doc.text("Cumul des dépôts du mois jusqu'au "+fd(to)+' : '+fr(cum),10,y);y+=14;if(y>240){doc.addPage();y=20}
  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.text('Le PDG',125,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
  doc.text('Signature : ____________________',10,y+20);sigImg(doc,y);doc.text('Signature : ____________________',125,y+20);doc.text('Date : '+fd(td()),10,y+30);doc.text('Date : '+fd(td()),125,y+30);
- fin(doc,'recu-depot_'+from+'_'+to+'.pdf',share)}
+ stamp(doc);fin(doc,'recu-depot_'+from+'_'+to+'.pdf',share)}
 function sgInit(){const c=$('sg'),x=c.getContext('2d');if(!x)return;let dn=0;x.lineWidth=2.5;x.lineCap='round';const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
  c.addEventListener('pointerdown',e=>{dn=1;const q=p(e);x.beginPath();x.moveTo(q[0],q[1]);c.setPointerCapture(e.pointerId)});c.addEventListener('pointermove',e=>{if(!dn)return;const q=p(e);x.lineTo(q[0],q[1]);x.stroke()});['pointerup','pointercancel'].forEach(t=>c.addEventListener(t,()=>{dn=0}))}
 function sgSave(){D.sig=$('sg').toDataURL('image/png');D.sigt=Date.now();save();alert('Signature enregistrée : elle apparaîtra sur les PDF.')}
@@ -637,6 +637,7 @@ function sgDel(){D.sig='';D.sigt=Date.now();save();alert('Signature retirée.')}
 function logoUp(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,160/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);D.logo=c.toDataURL('image/png');D.logow=c.width;D.logoh=c.height;D.logot=Date.now();save();alert('Logo enregistré : il apparaîtra sur les PDF.')};im.src=r.result};r.readAsDataURL(f)}
 function logoDel(){D.logo='';D.logot=Date.now();save();alert('Logo retiré.')}
 let idle=Date.now();['click','keydown','touchstart'].forEach(e=>document.addEventListener(e,()=>{idle=Date.now()}));setInterval(()=>{if(gp()&&Date.now()-idle>18e4&&$('lk').style.display!='flex')lock()},10000);
+function stamp(doc){const d=new Date(),t='Édité le '+fd(iso(d))+' à '+pad(d.getHours())+':'+pad(d.getMinutes()),n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(110);doc.text(t,200,291,{align:'right'})}}
 function pay(i){const z=DB[i],m=parseInt(prompt('Montant payé par '+z.n+' (en F) :'));if(m>0){D.pay.push({d:iso(new Date()),n:z.n,m,i:Date.now()+'-'+Math.random()});save();render()}}
 const PK='jdd_pin',gp=()=>{try{return localStorage.getItem(PK)}catch(e){return null}};
 function lock(){$('lk').style.display=gp()?'flex':'none'}
@@ -688,7 +689,7 @@ async function pdf(share){const RT=$('rt').value;if(RT!='global')return rap(RT,s
  y+=14;if(y>262){doc.addPage();y=20}
  doc.setTextColor(0);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('Le superviseur général',10,y);doc.setFont('helvetica','normal');doc.text('Kouessi Franck Kevin ADRE',10,y+5);
  doc.text('Signature : ______________________________',10,y+20);sigImg(doc,y);doc.text('Date : '+fd(td()),125,y+20);
- annexes(doc,from,to,true,true);await recusPages(doc,from,to);const nm='suivi-oeufs_'+from+'_'+to+'.pdf';if(share){const f=new File([doc.output('blob')],nm,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'Suivi des œufs'}).catch(()=>{});else alert("Le partage n'est pas disponible sur cet appareil. Téléchargez le PDF, puis envoyez-le par WhatsApp.")}else doc.save(nm)}
+ annexes(doc,from,to,true,true);await recusPages(doc,from,to);stamp(doc);const nm='suivi-oeufs_'+from+'_'+to+'.pdf';if(share){const f=new File([doc.output('blob')],nm,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'Suivi des œufs'}).catch(()=>{});else alert("Le partage n'est pas disponible sur cet appareil. Téléchargez le PDF, puis envoyez-le par WhatsApp.")}else doc.save(nm)}
 function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='sauvegarde-oeufs_'+iso(new Date())+'.json';a.click()}
 function restore(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.ini||!j.days)throw 0;if(confirm("Remplacer toutes les données de l'application par cette sauvegarde ?")){D=j;fix();save();onDate()}}catch(e){alert("Ce fichier n'est pas une sauvegarde valide.")}};r.readAsText(f)}
 $('date').value=cur;onDate();preset('Mois');ep('Mois');lock();fbui();sync();try{sgInit()}catch(e){}
